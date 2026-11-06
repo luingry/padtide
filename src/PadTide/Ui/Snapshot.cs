@@ -33,6 +33,10 @@ namespace PadTide.Ui
                 Save(directory, name, SettingsFrame(app, report));
             }
 
+            app.PreviewHostedLook(true);
+            Save(directory, "settings-hosted.png", SettingsFrame(app, new BatteryReport(65, false)));
+            app.PreviewHostedLook(false);
+
             var menu = new TrayMenuWindow(app) { ShowActivated = false, Left = -10000, Top = -10000, WindowStartupLocation = WindowStartupLocation.Manual };
             menu.Show();
             menu.UpdateLayout();

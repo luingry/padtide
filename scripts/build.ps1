@@ -10,6 +10,7 @@ function Build { dotnet build $project -c Release --nologo -v q; if ($LASTEXITCO
 Build
 & $exe --export-icon $icon | Out-Null
 Build
+dotnet build (Join-Path $root 'src\PadTide.Module\PadTide.Module.csproj') -c Release --nologo -v q; if ($LASTEXITCODE) { throw 'module build failed' }
 
 if (-not $SkipTests) {
     dotnet run --project (Join-Path $root 'tests\PadTide.Tests\PadTide.Tests.csproj') -c Release --nologo

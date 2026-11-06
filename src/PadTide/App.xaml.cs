@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -23,7 +24,10 @@ namespace PadTide
         private const int HidNotificationType = 5;
         private const int FirstUpdateCheckDelaySeconds = 30;
 
-        private readonly string _settingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PadTide", "settings.ini");
+        private static readonly string StandaloneSettingsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PadTide", "settings.ini");
+        private string _settingsPath = StandaloneSettingsPath;
+        private HostedOptions? _hosted;
+        private Process? _parent;
         private Mutex? _instance;
         private HwndSource? _host;
         private IntPtr _deviceNotification;
@@ -43,6 +47,9 @@ namespace PadTide
 
         internal AppSettings Settings { get; private set; } = new AppSettings();
         internal BatteryReport? Battery { get; private set; }
+
+        /// <summary>Under SwissTechKnife, which owns the tray, updates, auto-start and stopping the app.</summary>
+        internal bool IsHosted { get; private set; }
         internal static string Version => Assembly.GetExecutingAssembly().GetName().Version!.ToString(3);
 
         protected override void OnStartup(StartupEventArgs e)
@@ -66,7 +73,18 @@ namespace PadTide
                 return;
             }
 
+            _hosted = HostedOptions.TryParse(e.Args);
+            IsHosted = _hosted != null;
+
             _instance = new Mutex(true, @"Local\PadTide.SingleInstance", out var firstInstance);
+            if (!firstInstance && _hosted != null)
+            {
+                // A standalone PadTide is running: the module waits for it instead of polling the controller twice.
+                _instance.Dispose();
+                _instance = null;
+                Shutdown(HostedOptions.AlreadyRunningExitCode);
+                return;
+            }
             if (!firstInstance)
             {
                 // Launching again is the way back to settings while the controller is off.
@@ -78,9 +96,16 @@ namespace PadTide
                 return;
             }
 
+            if (_hosted != null)
+            {
+                _settingsPath = Path.Combine(_hosted.DataDirectory, "settings.ini");
+                HostedOptions.MigrateSettings(StandaloneSettingsPath, _settingsPath);
+            }
+
             Settings = AppSettings.Load(_settingsPath);
-            _openSettingsIfOff = !e.Args.Contains(StartupRegistration.StartupArgument);
+            _openSettingsIfOff = _hosted == null && !e.Args.Contains(StartupRegistration.StartupArgument);
             CreateHost();
+            if (_hosted != null) ExitWithParent(_hosted.ParentId);
             ShowIdleTray();
 
             _widget = new WidgetWindow();
@@ -92,6 +117,8 @@ namespace PadTide
             _monitor = new ControllerMonitor();
             _monitor.Changed += report => Dispatcher.BeginInvoke(new Action(() => ApplyBattery(report)));
             _monitor.Start();
+            if (_hosted?.ShowSettings == true) OpenSettings();
+            if (_hosted != null) return;
 
             // Waits out the network coming up at boot, then wakes rarely; a day between real checks.
             _updateTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(FirstUpdateCheckDelaySeconds) };
@@ -105,6 +132,7 @@ namespace PadTide
 
         protected override void OnExit(ExitEventArgs e)
         {
+            _parent?.Dispose();
             _updateTimer?.Stop();
             _updater.Dispose();
             _monitor?.Dispose();
@@ -193,7 +221,7 @@ namespace PadTide
                 Height = 0,
             });
             _host.AddHook(HostProc);
-            _tray = new TrayIcon(_host.Handle);
+            if (_hosted == null) _tray = new TrayIcon(_host.Handle);
 
             NativeMethods.HidD_GetHidGuid(out var hidGuid);
             var filter = new NativeMethods.DevBroadcastDeviceInterface
@@ -253,7 +281,7 @@ namespace PadTide
                 _widget!.SetLevel(number, tide, battery.Charging, description);
                 _widget.Reveal();
                 _widget.KeepOnTop();
-                _tray!.Show(Artwork.CreateTrayIconHandle(number), description);
+                _tray?.Show(Artwork.CreateTrayIconHandle(number), description);
             }
             else
             {
@@ -278,7 +306,30 @@ namespace PadTide
             }), DispatcherPriority.ApplicationIdle);
         }
 
-        private void ShowIdleTray() => _tray!.Show(Artwork.CreateAppIconHandle(), "PadTide: controle desligado");
+        private void ShowIdleTray() => _tray?.Show(Artwork.CreateAppIconHandle(), "PadTide: controle desligado");
+
+        /// <summary>Lets snapshots render the hosted screens without running hosted.</summary>
+        internal void PreviewHostedLook(bool hosted) => IsHosted = hosted;
+
+        private void ExitWithParent(int parentId)
+        {
+            if (parentId <= 0) return;
+            try
+            {
+                _parent = Process.GetProcessById(parentId);
+                _parent.EnableRaisingEvents = true;
+                _parent.Exited += (s, e) => Dispatcher.BeginInvoke(new Action(Quit));
+                if (_parent.HasExited) Quit();
+            }
+            catch (ArgumentException)
+            {
+                Quit(); // The parent is already gone.
+            }
+            catch (InvalidOperationException)
+            {
+                Quit();
+            }
+        }
 
         private void ShowTrayMenu()
         {

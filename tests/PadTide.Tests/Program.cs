@@ -19,6 +19,8 @@ namespace PadTide.Tests
             ChecksForUpdatesAtMostOncePerDay();
             ChargingIsNeverLow();
             KeepsTheWidgetInsideTheFrame();
+            ParsesHostedArguments();
+            MigratesStandaloneSettingsOnce();
 
             Console.WriteLine(_failures == 0 ? "OK" : _failures + " falha(s)");
             return _failures == 0 ? 0 : 1;
@@ -143,6 +145,38 @@ namespace PadTide.Tests
             Check(WidgetPlacement.Clamp(2550, 64, 0, 2560) == 2496, "limita na borda direita");
             Check(WidgetPlacement.Clamp(40, 41, 66, 1146) == 66, "respeita o monitor deslocado");
             Check(WidgetPlacement.Clamp(5000, 64, 2560, 4480) == 4416, "limita no segundo monitor");
+        }
+
+        private static void ParsesHostedArguments()
+        {
+            var hosted = HostedOptions.TryParse(new[] { "--hosted", "--parent", "42", "--data", @"C:\stk\data\padtide", "--show" });
+            Check(hosted != null && hosted.ParentId == 42 && hosted.DataDirectory == @"C:\stk\data\padtide" && hosted.ShowSettings, "le os argumentos do modulo");
+            Check(HostedOptions.TryParse(new[] { "--startup" }) == null, "sem --hosted e o app normal");
+            Check(HostedOptions.TryParse(new[] { "--hosted" }) == null, "exige a pasta de dados");
+            Check(HostedOptions.TryParse(new[] { "--hosted", "--data", "relativa" }) == null, "rejeita pasta relativa");
+        }
+
+        private static void MigratesStandaloneSettingsOnce()
+        {
+            var folder = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "padtide-test-" + Guid.NewGuid().ToString("N"));
+            System.IO.Directory.CreateDirectory(folder);
+            try
+            {
+                var standalone = System.IO.Path.Combine(folder, "standalone.ini");
+                var hosted = System.IO.Path.Combine(folder, "module", "settings.ini");
+                Check(!HostedOptions.MigrateSettings(standalone, hosted), "sem origem nao copia");
+
+                System.IO.File.WriteAllText(standalone, "size=43");
+                Check(HostedOptions.MigrateSettings(standalone, hosted) && System.IO.File.ReadAllText(hosted) == "size=43", "copia na primeira vez");
+
+                System.IO.File.WriteAllText(hosted, "size=70");
+                Check(!HostedOptions.MigrateSettings(standalone, hosted) && System.IO.File.ReadAllText(hosted) == "size=70", "nao sobrescreve depois");
+                Check(System.IO.File.ReadAllText(standalone) == "size=43", "preserva o arquivo original");
+            }
+            finally
+            {
+                System.IO.Directory.Delete(folder, true);
+            }
         }
 
         private static void Check(bool condition, string name)

@@ -56,14 +56,14 @@
                 <TextBlock Style="{StaticResource Text.Label}" Text="Iniciar com o Windows" />
             </CheckBox>
 
-            <DockPanel Grid.Row="4" Margin="0,0,-12,26">
+            <DockPanel x:Name="UpdateRow" Grid.Row="4" Margin="0,0,-12,26">
                 <Button x:Name="UpdateButton" DockPanel.Dock="Right" Style="{StaticResource Tide.Button.Text}" Content="Verificar" Click="OnUpdateClicked"
                         AutomationProperties.Name="Verificar atualizações" />
                 <TextBlock Style="{StaticResource Text.Label}" Text="Atualizações" VerticalAlignment="Center" />
             </DockPanel>
 
             <DockPanel Grid.Row="5" Margin="0,0,-12,0">
-                <Button DockPanel.Dock="Right" Style="{StaticResource Tide.Button.Text}" Content="Encerrar" Click="OnQuitClicked"
+                <Button x:Name="QuitButton" DockPanel.Dock="Right" Style="{StaticResource Tide.Button.Text}" Content="Encerrar" Click="OnQuitClicked"
                         AutomationProperties.Name="Encerrar o PadTide" />
                 <TextBlock x:Name="BatteryText" Style="{StaticResource Text.Caption}" Foreground="{StaticResource Brush.Text.Secondary}" VerticalAlignment="Center" />
             </DockPanel>

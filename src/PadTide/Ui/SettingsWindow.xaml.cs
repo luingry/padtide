@@ -24,6 +24,13 @@ namespace PadTide.Ui
             VersionText.Text = "v" + App.Version;
             OpacitySlider.Value = _app.Settings.OpacityPercent;
             SizeSlider.Value = _app.Settings.Size;
+            if (_app.IsHosted)
+            {
+                // SwissTechKnife starts, updates and stops the app: these controls have no job here.
+                StartupToggle.Visibility = Visibility.Collapsed;
+                UpdateRow.Visibility = Visibility.Collapsed;
+                QuitButton.Visibility = Visibility.Collapsed;
+            }
             StartupToggle.IsChecked = StartupRegistration.IsEnabled;
             StartupToggle.Checked += OnStartupChanged;
             StartupToggle.Unchecked += OnStartupChanged;

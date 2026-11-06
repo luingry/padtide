@@ -52,6 +52,10 @@ jobs:
         shell: pwsh
         run: ./scripts/build-installer.ps1
 
+      - name: Build SwissTechKnife module package
+        shell: pwsh
+        run: ./scripts/pack-module.ps1
+
       - name: Publish release
         shell: pwsh
         env:
@@ -67,7 +71,7 @@ jobs:
             return
           }
           $global:LASTEXITCODE = 0
-          gh release create $tag "artifacts/PadTide-Setup-${{ steps.metadata.outputs.version }}.exe" `
+          gh release create $tag "artifacts/PadTide-Setup-${{ steps.metadata.outputs.version }}.exe" "artifacts/padtide-${{ steps.metadata.outputs.version }}.zip" `
             --title "PadTide ${{ steps.metadata.outputs.version }}" `
             --notes-file '${{ steps.metadata.outputs.notes }}' `
             --latest

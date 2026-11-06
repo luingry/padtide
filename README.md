@@ -37,6 +37,12 @@ O instalador ainda não tem assinatura digital, então o Windows pode mostrar um
 
 Você não precisa do GameSir Connect instalado.
 
+### No SwissTechKnife
+
+O PadTide também está disponível como módulo do [SwissTechKnife](https://github.com/luingry/SwissTechKnife). Instale pela loja do app: ele inicia, atualiza e encerra o PadTide, e copia suas preferências da versão instalada na primeira vez. Se as duas versões estiverem abertas, o módulo espera a outra fechar.
+
+No módulo, o ícone da área de notificação é o do próprio PadTide, sem o percentual, que continua no widget.
+
 ## Como usar
 
 | Para... | Faça isto |

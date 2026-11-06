@@ -1,0 +1,19 @@
+{
+  "id": "padtide",
+  "version": "0.5.0",
+  "entryAssembly": "PadTide.Module.dll",
+  "entryType": "PadTide.Module.PadTideModule",
+  "sdkVersion": 1,
+  "activation": "startup",
+  "loadMode": "memory",
+  "window": true,
+  "releaseNotes": [
+    {
+      "version": "0.5.0",
+      "notes": [
+        "First release as a SwissTechKnife module: starts with SwissTechKnife and restarts automatically after a failure.",
+        "Preferences are copied once from an installed PadTide; while it is open, the module waits and takes over when it closes."
+      ]
+    }
+  ]
+}

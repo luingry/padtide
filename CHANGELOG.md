@@ -2,6 +2,12 @@
 
 Todas as mudanças relevantes do PadTide ficam registradas aqui, no formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e com [versionamento semântico](https://semver.org/lang/pt-BR/).
 
+## [0.5.0] - 2026-11-06
+
+### Adicionado
+
+- O PadTide agora também funciona como módulo do SwissTechKnife, em um processo próprio. O app instalável continua igual.
+
 ## [0.4.0] - 2026-11-06
 
 ### Adicionado
