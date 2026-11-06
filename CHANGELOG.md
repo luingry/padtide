@@ -2,6 +2,12 @@
 
 Todas as mudanças relevantes do PadTide ficam registradas aqui, no formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e com [versionamento semântico](https://semver.org/lang/pt-BR/).
 
+## [0.1.3] - 2026-11-06
+
+### Alterado
+
+- Os valores de opacidade e tamanho nas configurações ficaram menores, para uma leitura mais equilibrada.
+
 ## [0.1.2] - 2026-11-06
 
 ### Corrigido

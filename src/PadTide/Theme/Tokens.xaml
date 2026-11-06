@@ -41,7 +41,7 @@
     <!-- Type: Bahnschrift's road-sign numerals carry values; Segoe UI Variable carries reading. -->
     <FontFamily x:Key="Font.Numeral">Bahnschrift</FontFamily>
     <FontFamily x:Key="Font.Text">Segoe UI Variable Text, Segoe UI</FontFamily>
-    <sys:Double x:Key="Type.Value">24</sys:Double>
+    <sys:Double x:Key="Type.Value">18</sys:Double>
     <sys:Double x:Key="Type.Title">15</sys:Double>
     <sys:Double x:Key="Type.Label">14</sys:Double>
     <sys:Double x:Key="Type.Caption">12</sys:Double>

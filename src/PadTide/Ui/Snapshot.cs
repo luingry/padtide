@@ -112,10 +112,24 @@ namespace PadTide.Ui
             window.Show();
             window.ShowBatteryForSnapshot(report);
             window.UpdateLayout();
+            LetAnimationsFinish();
             var bitmap = new RenderTargetBitmap((int)window.ActualWidth, (int)window.ActualHeight, 96, 96, PixelFormats.Pbgra32);
             bitmap.Render((Visual)window.Content);
             window.Close();
             return OnBackdrop(bitmap);
+        }
+
+        private static void LetAnimationsFinish()
+        {
+            var frame = new System.Windows.Threading.DispatcherFrame();
+            var timer = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
+            timer.Tick += (s, e) =>
+            {
+                timer.Stop();
+                frame.Continue = false;
+            };
+            timer.Start();
+            System.Windows.Threading.Dispatcher.PushFrame(frame);
         }
 
         private static BitmapSource OnBackdrop(BitmapSource content) => Artwork.Render(content.PixelWidth, content.PixelHeight, dc =>
