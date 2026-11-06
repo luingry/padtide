@@ -47,6 +47,13 @@ namespace PadTide.Ui
             var level = Math.Max(0, Math.Min(1, Level));
             if (level <= 0) return;
 
+            // A full tide has no crest: the swell would leave a dark sliver at the top edge.
+            if (level >= 1)
+            {
+                dc.DrawGeometry((Brush)FindResource(IsLow ? "Brush.Tide.Low" : "Brush.Tide"), null, panel);
+                return;
+            }
+
             var y = height * (1 - level);
             var swell = Math.Min(height * 0.022, 9);
             var tide = new StreamGeometry();

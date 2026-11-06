@@ -46,6 +46,7 @@ namespace PadTide.Native
         public const uint NotifyIconVersion4 = 4;
 
         public const int SmCxSmIcon = 49;
+        public const uint MonitorDefaultToNearest = 2;
 
         [StructLayout(LayoutKind.Sequential)]
         public struct SpDeviceInterfaceData
@@ -115,6 +116,24 @@ namespace PadTide.Native
             public int HotspotY;
             public IntPtr Mask;
             public IntPtr Color;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct Rect
+        {
+            public int Left;
+            public int Top;
+            public int Right;
+            public int Bottom;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MonitorInfo
+        {
+            public int Size;
+            public Rect Frame;
+            public Rect Work;
+            public uint Flags;
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -204,6 +223,12 @@ namespace PadTide.Native
 
         [DllImport("user32.dll")]
         public static extern bool GetCursorPos(out Point point);
+
+        [DllImport("user32.dll")]
+        public static extern IntPtr MonitorFromPoint(Point point, uint flags);
+
+        [DllImport("user32.dll", EntryPoint = "GetMonitorInfoW")]
+        public static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo info);
 
         [DllImport("user32.dll")]
         public static extern int GetSystemMetricsForDpi(int index, uint dpi);

@@ -18,7 +18,7 @@ namespace PadTide.Device
 
         private readonly Timer _timer;
         private readonly object _gate = new object();
-        private string? _path;
+        private ControllerLink _link;
         private bool _needsScan = true;
         private bool _published;
         private BatteryReport? _current;
@@ -65,13 +65,23 @@ namespace PadTide.Device
 
         private void Tick()
         {
-            string? path;
+            ControllerLink link;
             lock (_gate)
             {
-                if (_needsScan) _path = HidChannel.FindDevicePath();
+                if (_needsScan) _link = HidChannel.FindController();
                 _needsScan = false;
-                path = _path;
+                link = _link;
             }
+
+            if (link.IsWired)
+            {
+                // Nothing to poll on the cable; the next device notification ends this state.
+                _misses = 0;
+                Publish(BatteryReport.WiredCharging);
+                return;
+            }
+
+            var path = link.DongleInterface;
 
             if (path == null)
             {

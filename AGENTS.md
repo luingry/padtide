@@ -10,7 +10,7 @@ PadTide é um widget de bateria para o GameSir Nova 2 Lite, em C#/WPF sobre .NET
 
 ## Protocolo do controle
 
-A única mensagem enviada ao controle é o pedido de `BatteryReport.CreateRequest`. Não sondar outros comandos nessa interface: `[0,242,0,4,246]`, por exemplo, coloca o dongle em modo de atualização de firmware. `PID_1098` significa controle ligado; `PID_2106`, só o dongle.
+A única mensagem enviada ao controle é o pedido de `BatteryReport.CreateRequest`. Não sondar outros comandos nessa interface: `[0,242,0,4,246]`, por exemplo, coloca o dongle em modo de atualização de firmware. `PID_1098` significa controle ligado pelo dongle; `PID_2106`, só o dongle; `PID_100F`, controle no cabo, reconhecido só pela presença, sem nenhum pedido.
 
 ## Versionamento
 

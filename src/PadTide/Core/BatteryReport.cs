@@ -6,6 +6,9 @@ namespace PadTide.Core
         public const int LowThreshold = 15;
         public const int ReportLength = 65;
 
+        /// <summary>On the cable the controller is charging; its level is not read, so Percent says nothing here.</summary>
+        public static readonly BatteryReport WiredCharging = new BatteryReport(100, true);
+
         private const int CommandOffset = 1;
         private const int AddressOffset = 2;
         private const int AddressLength = 6;
@@ -21,7 +24,7 @@ namespace PadTide.Core
 
         public int Percent { get; }
         public bool Charging { get; }
-        public bool IsLow => IsLowLevel(Percent);
+        public bool IsLow => !Charging && IsLowLevel(Percent);
 
         public static bool IsLowLevel(int percent) => percent < LowThreshold;
 

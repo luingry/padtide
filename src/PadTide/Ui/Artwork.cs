@@ -26,12 +26,13 @@ namespace PadTide.Ui
             "M 28,8 C 22,8 16,10 13,16 C 8,26 3,42 2,52 C 1,61 6,66 12,66 C 18,66 21,62 25,56 L 29,50 " +
             "C 31,47 34,46 37,46 L 63,46 C 66,46 69,47 71,50 L 75,56 C 79,62 82,66 88,66 C 94,66 99,61 98,52 " +
             "C 97,42 92,26 87,16 C 84,10 78,8 72,8 C 66,8 64,11 59,11 L 41,11 C 36,11 34,8 28,8 Z");
+        private static readonly Geometry Bolt = Parse("M 53.5,16.2 L 41.5,31 L 49,31 L 46.5,40.8 L 58.5,26 L 51,26 Z");
         private static readonly Geometry Tide = Parse("M -2,37 C 14,31 34,31 50,37 S 84,43 102,37 L 102,70 L -2,70 Z");
         private static readonly Typeface Numeral = new Typeface(new FontFamily("Bahnschrift"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
         private static readonly Typeface NumeralCondensed = new Typeface(new FontFamily("Bahnschrift"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Condensed);
 
-        /// <summary>The widget: controller outline only, the percentage in the middle.</summary>
-        public static void DrawBadge(DrawingContext dc, double width, int percent, double windowOpacity = 1)
+        /// <summary>The widget: controller outline only, the percentage in the middle, or a bolt while charging (null level).</summary>
+        public static void DrawBadge(DrawingContext dc, double width, int? level, double windowOpacity = 1)
         {
             var scale = width / ViewWidth;
             dc.PushTransform(new ScaleTransform(scale, scale));
@@ -42,18 +43,26 @@ namespace PadTide.Ui
             var hitAlpha = (byte)Math.Min(255, Math.Ceiling(2 / Math.Max(0.01, windowOpacity)));
             dc.DrawGeometry(new SolidColorBrush(Color.FromArgb(hitAlpha, 0, 0, 0)), null, Controller);
 
-            var line = Brush(BatteryReport.IsLowLevel(percent) ? "Color.Signal" : "Color.Foam");
+            var line = Brush(level is int percent && BatteryReport.IsLowLevel(percent) ? "Color.Signal" : "Color.Foam");
             var ink = Brush("Color.Foam");
             var halo = Brush("Color.Halo");
-            var stroke = Math.Max(3.2, 1.3 / scale);
+            var stroke = Math.Max(4.4, 1.7 / scale);
             var haloWidth = (width < 44 ? 1.1 : 1.8) / scale;
 
             dc.DrawGeometry(null, RoundPen(halo, stroke + haloWidth), Controller);
             dc.DrawGeometry(null, RoundPen(line, stroke), Controller);
 
-            var number = BuildNumber(percent, width >= 60);
-            dc.DrawGeometry(null, RoundPen(halo, haloWidth), number);
-            dc.DrawGeometry(ink, null, number);
+            if (level is int value)
+            {
+                var number = BuildNumber(value, width >= 60);
+                dc.DrawGeometry(null, RoundPen(halo, haloWidth), number);
+                dc.DrawGeometry(ink, null, number);
+            }
+            else
+            {
+                dc.DrawGeometry(null, RoundPen(halo, haloWidth + 1.2), Bolt);
+                dc.DrawGeometry(ink, RoundPen(ink, 1.2), Bolt);
+            }
 
             dc.Pop();
             dc.Pop();
@@ -88,9 +97,25 @@ namespace PadTide.Ui
             dc.Pop();
         }
 
-        /// <summary>Notification-area tile: the number over a tide at the real level, amber when low.</summary>
-        public static void DrawTrayIcon(DrawingContext dc, double size, int percent)
+        /// <summary>Notification-area tile: the number over a tide at the real level, amber when low, a bolt while charging (null level).</summary>
+        public static void DrawTrayIcon(DrawingContext dc, double size, int? level)
         {
+            if (level == null)
+            {
+                dc.DrawRoundedRectangle(Brush("Color.TideHigh"), null, new Rect(0, 0, size, size), size * 0.22, size * 0.22);
+                var boltScale = size * 0.78 / 24.6;
+                dc.PushTransform(new TranslateTransform(size / 2, size / 2));
+                dc.PushTransform(new ScaleTransform(boltScale, boltScale));
+                dc.PushTransform(new TranslateTransform(-50, -28.5));
+                var foam = Brush("Color.Foam");
+                dc.DrawGeometry(foam, RoundPen(foam, 1.2), Bolt);
+                dc.Pop();
+                dc.Pop();
+                dc.Pop();
+                return;
+            }
+
+            var percent = level.Value;
             var low = BatteryReport.IsLowLevel(percent);
             var tile = new RectangleGeometry(new Rect(0, 0, size, size), size * 0.22, size * 0.22);
             dc.PushClip(tile);
@@ -128,7 +153,7 @@ namespace PadTide.Ui
         }
 
         /// <summary>Builds an HICON the caller owns (TrayIcon destroys it).</summary>
-        public static IntPtr CreateTrayIconHandle(int percent) => CreateIconHandle((dc, size) => DrawTrayIcon(dc, size, percent));
+        public static IntPtr CreateTrayIconHandle(int? level) => CreateIconHandle((dc, size) => DrawTrayIcon(dc, size, level));
 
         /// <summary>The icon shown while the controller is off: the brand mark alone.</summary>
         public static IntPtr CreateAppIconHandle() => CreateIconHandle(DrawAppIcon);

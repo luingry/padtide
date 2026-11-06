@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/widget.png" width="520" alt="Widget em forma de controle mostrando 65%, 100% e, com o contorno amarelo, 9%">
+  <img src="docs/widget.png" width="520" alt="Widget em forma de controle mostrando 65%, um raio de carregamento e, com o contorno amarelo, 9%">
 </p>
 
 ## O que ele faz
@@ -22,6 +22,7 @@ Ligou o controle, o percentual aparece em um pequeno widget na tela e na área d
 
 - **Bateria em tempo real:** o percentual é atualizado a cada 5 segundos.
 - **Aviso de bateria baixa:** abaixo de 15%, o contorno do widget fica amarelo.
+- **Carregando:** com o controle no cabo, um raio aparece no lugar do percentual.
 - **Discreto:** por padrão, o widget fica com 50% de opacidade. Você escolhe a opacidade e o tamanho, de 30 a 100 px.
 - **Leve:** um único programa pequeno. Com o controle desligado, ele fica parado até o Windows avisar que o controle voltou.
 - **Sempre atualizado:** quando sai uma versão nova, ele pergunta e se atualiza sozinho.
@@ -40,7 +41,7 @@ Você não precisa do GameSir Connect instalado.
 
 | Para... | Faça isto |
 |---|---|
-| Mudar o widget de lugar | Arraste o widget |
+| Mudar o widget de lugar | Arraste o widget. Ele sempre fica inteiro dentro do monitor, e você pode levá-lo para outro |
 | Abrir as configurações | Clique duas vezes no widget ou clique no ícone da área de notificação |
 | Iniciar junto com o Windows | Ative **Iniciar com o Windows** nas configurações |
 | Procurar uma versão nova | Clique em **Verificar** nas configurações |
@@ -68,7 +69,7 @@ O PadTide mostra o número que o próprio controle informa, e esse valor pode os
 - Windows 10 ou 11.
 - GameSir Nova 2 Lite conectado pelo **dongle 2.4G**.
 
-Por enquanto, as conexões por cabo e por Bluetooth não mostram a bateria. O PadTide é um projeto independente, sem vínculo com a GameSir.
+Com o cabo, o PadTide mostra o raio de carregamento, sem o percentual. Pelo Bluetooth, ele ainda não mostra a bateria. O PadTide é um projeto independente, sem vínculo com a GameSir.
 
 ## Para desenvolvedores
 

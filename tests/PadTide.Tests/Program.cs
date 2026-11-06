@@ -17,6 +17,8 @@ namespace PadTide.Tests
             SettingsClampAndRoundTrip();
             OffersOnlyANewerInstallerFromThisProject();
             ChecksForUpdatesAtMostOncePerDay();
+            ChargingIsNeverLow();
+            KeepsTheWidgetInsideTheFrame();
 
             Console.WriteLine(_failures == 0 ? "OK" : _failures + " falha(s)");
             return _failures == 0 ? 0 : 1;
@@ -121,6 +123,22 @@ namespace PadTide.Tests
             var saved = new AppSettings { LastUpdateCheckUtc = now };
             var loaded = AppSettings.Parse(saved.Serialize().Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries));
             Check(loaded.LastUpdateCheckUtc == now, "preserva a data da verificacao");
+        }
+
+        private static void ChargingIsNeverLow()
+        {
+            Check(BatteryReport.WiredCharging.Charging, "cabo significa carregando");
+            Check(!new BatteryReport(5, true).IsLow, "carregando nao fica com contorno amarelo");
+            Check(new BatteryReport(5, false).IsLow, "5% sem carga e baixo");
+        }
+
+        private static void KeepsTheWidgetInsideTheFrame()
+        {
+            Check(WidgetPlacement.Clamp(100, 64, 0, 2560) == 100, "posicao valida nao muda");
+            Check(WidgetPlacement.Clamp(-30, 64, 0, 2560) == 0, "limita na borda esquerda");
+            Check(WidgetPlacement.Clamp(2550, 64, 0, 2560) == 2496, "limita na borda direita");
+            Check(WidgetPlacement.Clamp(40, 41, 66, 1146) == 66, "respeita o monitor deslocado");
+            Check(WidgetPlacement.Clamp(5000, 64, 2560, 4480) == 4416, "limita no segundo monitor");
         }
 
         private static void Check(bool condition, string name)

@@ -11,28 +11,46 @@ namespace PadTide.Device
     /// <summary>
     /// Talks to the Nova 2 Lite dongle over its vendor HID interface. The dongle reports PID 1098 only while
     /// the controller is on; alone it reports PID 2106, so finding this path already means "controller on".
+    /// On the cable the controller itself appears as PID 100F. That mode is recognized by presence alone: no
+    /// request is ever sent to it.
     /// </summary>
+    internal readonly struct ControllerLink
+    {
+        public ControllerLink(string? dongleInterface, bool isWired)
+        {
+            DongleInterface = dongleInterface;
+            IsWired = isWired;
+        }
+
+        public string? DongleInterface { get; }
+        public bool IsWired { get; }
+    }
+
     internal static class HidChannel
     {
         private const string InterfaceMarker = "vid_3537&pid_1098&mi_02";
+        private const string WiredMarker = "vid_3537&pid_100f";
         private const ushort VendorUsagePage = 0xFF7A;
         private const int ReadBudgetMilliseconds = 800;
         private const int WriteBudgetMilliseconds = 300;
 
-        public static string? FindDevicePath()
+        public static ControllerLink FindController()
         {
             NativeMethods.HidD_GetHidGuid(out var hidGuid);
             var set = NativeMethods.SetupDiGetClassDevs(ref hidGuid, IntPtr.Zero, IntPtr.Zero, NativeMethods.DigcfPresent | NativeMethods.DigcfDeviceInterface);
-            if (set == new IntPtr(-1)) return null;
+            if (set == new IntPtr(-1)) return default;
             try
             {
+                string? vendorPath = null;
                 var data = new NativeMethods.SpDeviceInterfaceData { Size = Marshal.SizeOf<NativeMethods.SpDeviceInterfaceData>() };
                 for (uint index = 0; NativeMethods.SetupDiEnumDeviceInterfaces(set, IntPtr.Zero, ref hidGuid, index, ref data); index++)
                 {
                     var path = ReadInterfacePath(set, ref data);
-                    if (path != null && path.IndexOf(InterfaceMarker, StringComparison.OrdinalIgnoreCase) >= 0 && IsVendorInterface(path)) return path;
+                    if (path == null) continue;
+                    if (path.IndexOf(WiredMarker, StringComparison.OrdinalIgnoreCase) >= 0) return new ControllerLink(null, true);
+                    if (vendorPath == null && path.IndexOf(InterfaceMarker, StringComparison.OrdinalIgnoreCase) >= 0 && IsVendorInterface(path)) vendorPath = path;
                 }
-                return null;
+                return new ControllerLink(vendorPath, false);
             }
             finally
             {

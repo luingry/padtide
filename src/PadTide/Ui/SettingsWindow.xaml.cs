@@ -49,10 +49,10 @@ namespace PadTide.Ui
 
         private void ShowBattery(BatteryReport? report, bool animate)
         {
-            var level = report?.Percent / 100d ?? 0;
+            var level = report is BatteryReport reading ? (reading.Charging ? 1 : reading.Percent / 100d) : 0;
             Tide.IsLow = report?.IsLow ?? false;
             BatteryText.Text = report is BatteryReport battery
-                ? "Bateria em " + battery.Percent.ToString(CultureInfo.InvariantCulture) + "%"
+                ? (battery.Charging ? "Carregando" : "Bateria em " + battery.Percent.ToString(CultureInfo.InvariantCulture) + "%")
                 : "Controle desligado";
 
             if (animate && SystemParameters.ClientAreaAnimation)

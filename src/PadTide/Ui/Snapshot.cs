@@ -25,6 +25,7 @@ namespace PadTide.Ui
             {
                 ("settings-65.png", new BatteryReport(65, false)),
                 ("settings-9.png", new BatteryReport(9, false)),
+                ("settings-charging.png", BatteryReport.WiredCharging),
                 ("settings-off.png", null),
             })
             {
@@ -49,11 +50,11 @@ namespace PadTide.Ui
             notice.Close();
         }
 
-        private static BitmapSource Badges(Color background) => Artwork.Render(760, 300, dc =>
+        private static BitmapSource Badges(Color background) => Artwork.Render(900, 300, dc =>
         {
-            dc.DrawRectangle(new SolidColorBrush(background), null, new Rect(0, 0, 760, 300));
+            dc.DrawRectangle(new SolidColorBrush(background), null, new Rect(0, 0, 900, 300));
             var x = 16.0;
-            foreach (var (size, percent) in new[] { (30, 65), (30, 100), (30, 9), (48, 65), (64, 65), (64, 100), (64, 14), (100, 65), (100, 9) })
+            foreach (var (size, percent) in new (int, int?)[] { (30, 65), (30, 100), (30, 9), (30, null), (43, 65), (43, null), (64, 65), (64, 14), (64, null), (100, 65), (100, null) })
             {
                 dc.PushTransform(new TranslateTransform(x, 40));
                 Artwork.DrawBadge(dc, size, percent);
@@ -71,7 +72,7 @@ namespace PadTide.Ui
         {
             dc.DrawRoundedRectangle(new SolidColorBrush(Color.FromRgb(0x17, 0x1D, 0x24)), null, new Rect(0, 0, 520, 130), 18, 18);
             var x = 40.0;
-            foreach (var percent in new[] { 65, 100, 9 })
+            foreach (var percent in new int?[] { 65, null, 9 })
             {
                 dc.PushTransform(new TranslateTransform(x, 32));
                 Artwork.DrawBadge(dc, 100, percent);
@@ -97,7 +98,7 @@ namespace PadTide.Ui
         {
             dc.DrawRectangle(new SolidColorBrush(Color.FromRgb(0x1C, 0x1F, 0x24)), null, new Rect(0, 0, 420, 90));
             var x = 10.0;
-            foreach (var (size, percent) in new[] { (16, 65), (16, 100), (16, 9), (20, 65), (20, 100), (24, 65), (24, 100), (32, 65), (32, 100), (32, 9) })
+            foreach (var (size, percent) in new (int, int?)[] { (16, 65), (16, 100), (16, 9), (16, null), (20, 65), (20, null), (24, 65), (24, null), (32, 65), (32, 9), (32, null) })
             {
                 dc.PushTransform(new TranslateTransform(x, 20));
                 Artwork.DrawTrayIcon(dc, size, percent);

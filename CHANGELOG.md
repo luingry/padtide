@@ -2,6 +2,17 @@
 
 Todas as mudanças relevantes do PadTide ficam registradas aqui, no formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e com [versionamento semântico](https://semver.org/lang/pt-BR/).
 
+## [0.2.0] - 2026-11-06
+
+### Adicionado
+
+- Estado de carregando: com o controle no cabo, um raio aparece no lugar do percentual, no widget e na área de notificação.
+- O widget agora fica sempre inteiro dentro do monitor, ao arrastar, ao aumentar o tamanho e ao abrir o programa.
+
+### Alterado
+
+- O contorno do widget ficou um pouco mais grosso.
+
 ## [0.1.3] - 2026-11-06
 
 ### Alterado

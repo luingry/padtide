@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using PadTide.Core;
 using PadTide.Native;
 
 namespace PadTide.Ui
@@ -42,10 +43,11 @@ namespace PadTide.Ui
         public event Action? SettingsRequested;
         public event Action? Moved;
 
-        public void SetPercent(int percent)
+        /// <summary>Shows a percentage, or the charging bolt when the level is null.</summary>
+        public void SetLevel(int? level, string accessibleName)
         {
-            _badge.Percent = percent;
-            AutomationProperties.SetName(this, "Bateria do controle: " + percent + "%");
+            _badge.Level = level;
+            AutomationProperties.SetName(this, accessibleName);
         }
 
         public void ApplyLook(int size, int opacityPercent)
@@ -56,26 +58,23 @@ namespace PadTide.Ui
             _badge.WindowOpacity = _opacity;
             BeginAnimation(OpacityProperty, null);
             Opacity = _opacity;
+            KeepInsideMonitor();
         }
 
         public void PlaceAt(double? left, double? top)
         {
-            var defaultLeft = SystemParameters.WorkArea.Right - Width - EdgeMargin;
-            var defaultTop = SystemParameters.WorkArea.Bottom - Height - EdgeMargin;
-            var x = left ?? defaultLeft;
-            var y = top ?? defaultTop;
+            Left = left ?? SystemParameters.WorkArea.Right - Width - EdgeMargin;
+            Top = top ?? SystemParameters.WorkArea.Bottom - Height - EdgeMargin;
 
-            // A monitor may be gone since the last session: never restore off-screen.
-            var offScreen = x + Width < SystemParameters.VirtualScreenLeft || x > SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth ||
-                y + Height < SystemParameters.VirtualScreenTop || y > SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight;
-            Left = offScreen ? defaultLeft : x;
-            Top = offScreen ? defaultTop : y;
+            // A monitor may be gone since the last session: this lands on the nearest one.
+            KeepInsideMonitor();
         }
 
         public void Reveal()
         {
             if (IsVisible) return;
             Show();
+            KeepInsideMonitor();
             if (SystemParameters.ClientAreaAnimation)
             {
                 var fade = new DoubleAnimation(0, _opacity, TimeSpan.FromMilliseconds(220)) { FillBehavior = FillBehavior.Stop };
@@ -114,9 +113,36 @@ namespace PadTide.Ui
             var offset = CursorPosition() - _pressCursor;
             if (!_dragging && Math.Abs(offset.X) < SystemParameters.MinimumHorizontalDragDistance && Math.Abs(offset.Y) < SystemParameters.MinimumVerticalDragDistance) return;
             _dragging = true;
-            Left = _pressLeft + offset.X;
-            Top = _pressTop + offset.Y;
+
+            // The monitor under the cursor sets the limit, so the widget can still cross to another screen.
+            NativeMethods.GetCursorPos(out var cursor);
+            var frame = MonitorFrame(cursor);
+            Left = WidgetPlacement.Clamp(_pressLeft + offset.X, Width, frame.Left, frame.Right);
+            Top = WidgetPlacement.Clamp(_pressTop + offset.Y, Height, frame.Top, frame.Bottom);
         }
+
+        private void KeepInsideMonitor()
+        {
+            if (double.IsNaN(Left) || double.IsNaN(Top)) return;
+            var center = ToDevice().Transform(new Point(Left + Width / 2, Top + Height / 2));
+            var frame = MonitorFrame(new NativeMethods.Point { X = (int)center.X, Y = (int)center.Y });
+            Left = WidgetPlacement.Clamp(Left, Width, frame.Left, frame.Right);
+            Top = WidgetPlacement.Clamp(Top, Height, frame.Top, frame.Bottom);
+        }
+
+        private Rect MonitorFrame(NativeMethods.Point devicePoint)
+        {
+            var monitor = NativeMethods.MonitorFromPoint(devicePoint, NativeMethods.MonitorDefaultToNearest);
+            var info = new NativeMethods.MonitorInfo { Size = System.Runtime.InteropServices.Marshal.SizeOf<NativeMethods.MonitorInfo>() };
+            NativeMethods.GetMonitorInfo(monitor, ref info);
+            var fromDevice = ToDevice();
+            fromDevice.Invert();
+            return new Rect(
+                fromDevice.Transform(new Point(info.Frame.Left, info.Frame.Top)),
+                fromDevice.Transform(new Point(info.Frame.Right, info.Frame.Bottom)));
+        }
+
+        private Matrix ToDevice() => PresentationSource.FromVisual(this)?.CompositionTarget?.TransformToDevice ?? Matrix.Identity;
 
         private void OnRelease(object sender, MouseButtonEventArgs e)
         {
@@ -135,16 +161,16 @@ namespace PadTide.Ui
 
         private sealed class BadgeView : FrameworkElement
         {
-            private int _percent;
+            private int? _level = 0;
             private double _windowOpacity = 1;
 
-            public int Percent
+            public int? Level
             {
-                get => _percent;
+                get => _level;
                 set
                 {
-                    if (_percent == value) return;
-                    _percent = value;
+                    if (_level == value) return;
+                    _level = value;
                     InvalidateVisual();
                 }
             }
@@ -159,7 +185,7 @@ namespace PadTide.Ui
                 }
             }
 
-            protected override void OnRender(DrawingContext dc) => Artwork.DrawBadge(dc, ActualWidth, _percent, _windowOpacity);
+            protected override void OnRender(DrawingContext dc) => Artwork.DrawBadge(dc, ActualWidth, _level, _windowOpacity);
         }
     }
 }

@@ -242,10 +242,12 @@ namespace PadTide
             Battery = report;
             if (report is BatteryReport battery)
             {
-                _widget!.SetPercent(battery.Percent);
+                var level = battery.Charging ? (int?)null : battery.Percent;
+                var description = battery.Charging ? "Controle carregando" : "Bateria do controle: " + battery.Percent + "%";
+                _widget!.SetLevel(level, description);
                 _widget.Reveal();
                 _widget.KeepOnTop();
-                _tray!.Show(Artwork.CreateTrayIconHandle(battery.Percent), "Bateria do controle: " + battery.Percent + "%");
+                _tray!.Show(Artwork.CreateTrayIconHandle(level), description);
             }
             else
             {
