@@ -1,0 +1,63 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Palette "Mare": petrol water, foam, and the coral of a charging LED. Only tone separates surfaces. -->
+    <Color x:Key="Color.Abyss">#0E2029</Color>
+    <Color x:Key="Color.Deep">#132B36</Color>
+    <Color x:Key="Color.TideLow">#1A3C49</Color>
+    <Color x:Key="Color.TideHigh">#20505F</Color>
+    <Color x:Key="Color.Lift">#2B6172</Color>
+    <Color x:Key="Color.Foam">#F1F8F6</Color>
+    <Color x:Key="Color.Mist">#A9C2C3</Color>
+    <Color x:Key="Color.Drift">#7F9EA2</Color>
+    <Color x:Key="Color.Coral">#F0654A</Color>
+    <Color x:Key="Color.CoralHigh">#FF9B78</Color>
+    <Color x:Key="Color.Signal">#FFC93C</Color>
+    <Color x:Key="Color.SignalTide">#4F4720</Color>
+    <Color x:Key="Color.Halo">#B80A1820</Color>
+    <Color x:Key="Color.Shadow">#000A12</Color>
+
+    <SolidColorBrush x:Key="Brush.Text.Primary" Color="{StaticResource Color.Foam}" />
+    <SolidColorBrush x:Key="Brush.Text.Secondary" Color="{StaticResource Color.Mist}" />
+    <SolidColorBrush x:Key="Brush.Text.Tertiary" Color="{StaticResource Color.Drift}" />
+    <SolidColorBrush x:Key="Brush.Ink" Color="{StaticResource Color.Abyss}" />
+    <SolidColorBrush x:Key="Brush.Accent" Color="{StaticResource Color.Coral}" />
+    <SolidColorBrush x:Key="Brush.Accent.Soft" Color="{StaticResource Color.CoralHigh}" />
+    <SolidColorBrush x:Key="Brush.Track" Color="#2AF1F8F6" />
+    <SolidColorBrush x:Key="Brush.Hover" Color="#1CF1F8F6" />
+    <SolidColorBrush x:Key="Brush.Press" Color="#30F1F8F6" />
+    <SolidColorBrush x:Key="Brush.Toggle.Off" Color="{StaticResource Color.Lift}" />
+    <SolidColorBrush x:Key="Brush.Tide.Low" Color="{StaticResource Color.SignalTide}" />
+    <LinearGradientBrush x:Key="Brush.Surface" StartPoint="0.5,0" EndPoint="0.5,1">
+        <GradientStop Offset="0" Color="{StaticResource Color.Deep}" />
+        <GradientStop Offset="1" Color="{StaticResource Color.Abyss}" />
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="Brush.Tide" StartPoint="0.5,0" EndPoint="0.5,1">
+        <GradientStop Offset="0" Color="{StaticResource Color.TideHigh}" />
+        <GradientStop Offset="1" Color="{StaticResource Color.TideLow}" />
+    </LinearGradientBrush>
+
+    <!-- Type: Bahnschrift's road-sign numerals carry values; Segoe UI Variable carries reading. -->
+    <FontFamily x:Key="Font.Numeral">Bahnschrift</FontFamily>
+    <FontFamily x:Key="Font.Text">Segoe UI Variable Text, Segoe UI</FontFamily>
+    <sys:Double x:Key="Type.Value">24</sys:Double>
+    <sys:Double x:Key="Type.Title">15</sys:Double>
+    <sys:Double x:Key="Type.Label">14</sys:Double>
+    <sys:Double x:Key="Type.Caption">12</sys:Double>
+
+    <!-- Space: 4 pt rhythm. -->
+    <Thickness x:Key="Space.Panel">30,26,30,20</Thickness>
+    <sys:Double x:Key="Space.Row">26</sys:Double>
+    <CornerRadius x:Key="Radius.Rail">4</CornerRadius>
+    <CornerRadius x:Key="Radius.Toggle">13</CornerRadius>
+    <CornerRadius x:Key="Radius.Glow">18</CornerRadius>
+    <CornerRadius x:Key="Radius.Button">15</CornerRadius>
+    <CornerRadius x:Key="Radius.Menu">10</CornerRadius>
+    <sys:Double x:Key="Radius.Panel">26</sys:Double>
+
+    <DropShadowEffect x:Key="Elevation.Panel" BlurRadius="36" ShadowDepth="10" Direction="270" Opacity="0.5" Color="{StaticResource Color.Shadow}" />
+    <DropShadowEffect x:Key="Elevation.Knob" BlurRadius="7" ShadowDepth="1.5" Direction="270" Opacity="0.4" Color="{StaticResource Color.Shadow}" />
+
+    <Duration x:Key="Motion.Fast">0:0:0.14</Duration>
+</ResourceDictionary>
