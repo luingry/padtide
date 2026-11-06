@@ -2,6 +2,12 @@
 
 Todas as mudanças relevantes do PadTide ficam registradas aqui, no formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e com [versionamento semântico](https://semver.org/lang/pt-BR/).
 
+## [0.4.0] - 2026-11-06
+
+### Adicionado
+
+- Enquanto carrega, a água do widget e das configurações se move e fica na última leitura de bateria, em vez de encher tudo. Pelo cabo, o controle não informa o nível atual.
+
 ## [0.3.0] - 2026-11-06
 
 ### Adicionado

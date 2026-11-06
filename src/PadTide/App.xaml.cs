@@ -242,16 +242,22 @@ namespace PadTide
             Battery = report;
             if (report is BatteryReport battery)
             {
-                var level = battery.Charging ? (int?)null : battery.Percent;
+                if (battery.HasLevel && Settings.LastPercent != battery.Percent)
+                {
+                    Settings.LastPercent = battery.Percent;
+                    SaveSettings();
+                }
+                var number = battery.Charging ? (int?)null : battery.Percent;
+                var tide = battery.HasLevel ? battery.Percent : Settings.LastPercent;
                 var description = battery.Charging ? "Controle carregando" : "Bateria do controle: " + battery.Percent + "%";
-                _widget!.SetLevel(level, description);
+                _widget!.SetLevel(number, tide, battery.Charging, description);
                 _widget.Reveal();
                 _widget.KeepOnTop();
-                _tray!.Show(Artwork.CreateTrayIconHandle(level), description);
+                _tray!.Show(Artwork.CreateTrayIconHandle(number), description);
             }
             else
             {
-                _widget!.Hide();
+                _widget!.Conceal();
                 ShowIdleTray();
                 if (_firstState && _openSettingsIfOff) OpenSettings();
             }

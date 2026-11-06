@@ -6,7 +6,7 @@ namespace PadTide.Ui
 {
     /// <summary>
     /// The signature surface: the panel is the battery. A soft-edged tide rises to the real charge,
-    /// separating areas by tone instead of borders. It only redraws when the level changes.
+    /// separating areas by tone instead of borders. It only redraws when the level changes or while charging.
     /// </summary>
     public sealed class TideSurface : FrameworkElement
     {
@@ -18,6 +18,16 @@ namespace PadTide.Ui
 
         public static readonly DependencyProperty CornerRadiusProperty = DependencyProperty.Register(
             nameof(CornerRadius), typeof(double), typeof(TideSurface), new FrameworkPropertyMetadata(26d, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        public static readonly DependencyProperty PhaseProperty = DependencyProperty.Register(
+            nameof(Phase), typeof(double), typeof(TideSurface), new FrameworkPropertyMetadata(0d, FrameworkPropertyMetadataOptions.AffectsRender));
+
+        /// <summary>Moves the swell; only animated while charging.</summary>
+        public double Phase
+        {
+            get => (double)GetValue(PhaseProperty);
+            set => SetValue(PhaseProperty, value);
+        }
 
         /// <summary>Charge from 0 to 1.</summary>
         public double Level
@@ -55,17 +65,7 @@ namespace PadTide.Ui
             }
 
             var y = height * (1 - level);
-            var swell = Math.Min(height * 0.022, 9);
-            var tide = new StreamGeometry();
-            using (var context = tide.Open())
-            {
-                context.BeginFigure(new Point(0, y), true, true);
-                context.BezierTo(new Point(width * 0.24, y - swell * 1.6), new Point(width * 0.40, y - swell * 1.6), new Point(width * 0.58, y), true, true);
-                context.BezierTo(new Point(width * 0.74, y + swell * 1.4), new Point(width * 0.88, y + swell * 1.4), new Point(width, y - swell * 0.3), true, true);
-                context.LineTo(new Point(width, height), false, false);
-                context.LineTo(new Point(0, height), false, false);
-            }
-            tide.Freeze();
+            var tide = Artwork.Wave(0, width, y, Math.Min(height * 0.022, 9), Phase + Math.PI, height);
 
             dc.PushClip(panel);
             dc.DrawGeometry((Brush)FindResource(IsLow ? "Brush.Tide.Low" : "Brush.Tide"), null, tide);

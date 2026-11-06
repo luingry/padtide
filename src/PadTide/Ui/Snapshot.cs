@@ -21,6 +21,7 @@ namespace PadTide.Ui
             Save(directory, "tray-sizes.png", Trays());
 
             var app = (App)Application.Current;
+            app.Settings.LastPercent = 42;
             foreach (var (name, report) in new (string, BatteryReport?)[]
             {
                 ("settings-65.png", new BatteryReport(65, false)),
@@ -54,14 +55,15 @@ namespace PadTide.Ui
         {
             dc.DrawRectangle(new SolidColorBrush(background), null, new Rect(0, 0, 1060, 300));
             var x = 16.0;
-            foreach (var (size, percent) in new (int, int?)[] { (30, 65), (30, 100), (30, 9), (30, null), (43, 65), (43, 30), (43, null), (64, 65), (64, 100), (64, 14), (64, null), (100, 65), (100, 28), (100, 9) })
+            const int ChargingTide = 42;
+            foreach (var (size, percent) in new (int, int?)[] { (30, 65), (30, 100), (30, 9), (30, null), (43, 65), (43, 30), (43, null), (64, 65), (64, 100), (64, 14), (64, null), (100, 65), (100, null), (100, 9) })
             {
                 dc.PushTransform(new TranslateTransform(x, 40));
-                Artwork.DrawBadge(dc, size, percent);
+                Artwork.DrawBadge(dc, size, percent, percent ?? ChargingTide);
                 dc.Pop();
                 dc.PushTransform(new TranslateTransform(x, 170));
                 dc.PushOpacity(0.5);
-                Artwork.DrawBadge(dc, size, percent);
+                Artwork.DrawBadge(dc, size, percent, percent ?? ChargingTide);
                 dc.Pop();
                 dc.Pop();
                 x += size + 14;
@@ -75,7 +77,7 @@ namespace PadTide.Ui
             foreach (var percent in new int?[] { 65, null, 9 })
             {
                 dc.PushTransform(new TranslateTransform(x, 32));
-                Artwork.DrawBadge(dc, 100, percent);
+                Artwork.DrawBadge(dc, 100, percent, percent ?? 42);
                 dc.Pop();
                 x += 160;
             }

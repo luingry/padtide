@@ -16,6 +16,7 @@ namespace PadTide.Ui
         private const double EdgeMargin = 24;
         private readonly BadgeView _badge = new BadgeView();
         private double _opacity = 0.5;
+        private bool _waving;
         private bool _pressed;
         private bool _dragging;
         private Point _pressCursor;
@@ -43,11 +44,27 @@ namespace PadTide.Ui
         public event Action? SettingsRequested;
         public event Action? Moved;
 
-        /// <summary>Shows a percentage, or the charging bolt when the level is null.</summary>
-        public void SetLevel(int? level, string accessibleName)
+        /// <summary>Shows a percentage, or the charging bolt when the number is null, over a tide at the given level.</summary>
+        public void SetLevel(int? number, int? tide, bool charging, string accessibleName)
         {
-            _badge.Level = level;
+            _badge.Number = number;
+            _badge.Tide = tide;
+            SetWaving(charging && tide.HasValue);
             AutomationProperties.SetName(this, accessibleName);
+        }
+
+        public void Conceal()
+        {
+            SetWaving(false);
+            Hide();
+        }
+
+        private void SetWaving(bool waving)
+        {
+            if (waving && !SystemParameters.ClientAreaAnimation) waving = false;
+            if (waving == _waving) return;
+            _waving = waving;
+            _badge.BeginAnimation(BadgeView.PhaseProperty, waving ? WaveMotion.Create() : null);
         }
 
         public void ApplyLook(int size, int opacityPercent)
@@ -161,16 +178,37 @@ namespace PadTide.Ui
 
         private sealed class BadgeView : FrameworkElement
         {
-            private int? _level = 0;
+            public static readonly DependencyProperty PhaseProperty = DependencyProperty.Register(
+                nameof(Phase), typeof(double), typeof(BadgeView), new FrameworkPropertyMetadata(0d, FrameworkPropertyMetadataOptions.AffectsRender));
+
+            private int? _number = 0;
+            private int? _tide = 0;
             private double _windowOpacity = 1;
 
-            public int? Level
+            public double Phase
             {
-                get => _level;
+                get => (double)GetValue(PhaseProperty);
+                set => SetValue(PhaseProperty, value);
+            }
+
+            public int? Number
+            {
+                get => _number;
                 set
                 {
-                    if (_level == value) return;
-                    _level = value;
+                    if (_number == value) return;
+                    _number = value;
+                    InvalidateVisual();
+                }
+            }
+
+            public int? Tide
+            {
+                get => _tide;
+                set
+                {
+                    if (_tide == value) return;
+                    _tide = value;
                     InvalidateVisual();
                 }
             }
@@ -185,7 +223,7 @@ namespace PadTide.Ui
                 }
             }
 
-            protected override void OnRender(DrawingContext dc) => Artwork.DrawBadge(dc, ActualWidth, _level, _windowOpacity);
+            protected override void OnRender(DrawingContext dc) => Artwork.DrawBadge(dc, ActualWidth, _number, _tide, Phase, _windowOpacity);
         }
     }
 }

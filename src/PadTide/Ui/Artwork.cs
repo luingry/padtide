@@ -22,6 +22,7 @@ namespace PadTide.Ui
         private const double TideFloor = 66;
         private const double TideCeiling = 4;
         private const double TideSwell = 2.2;
+        private const double BoltRounding = 1.2;
 
         public const double BadgeAspect = ViewHeight / ViewWidth;
 
@@ -34,8 +35,8 @@ namespace PadTide.Ui
         private static readonly Typeface Numeral = new Typeface(new FontFamily("Bahnschrift"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
         private static readonly Typeface NumeralCondensed = new Typeface(new FontFamily("Bahnschrift"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Condensed);
 
-        /// <summary>The widget: the controller filled to the battery level, the percentage in the middle, or an empty outline and a bolt while charging (null level).</summary>
-        public static void DrawBadge(DrawingContext dc, double width, int? level, double windowOpacity = 1)
+        /// <summary>The widget: the controller filled to the tide level, with the percentage in the middle, or a bolt while charging (null number).</summary>
+        public static void DrawBadge(DrawingContext dc, double width, int? number, int? tide, double phase = 0, double windowOpacity = 1)
         {
             var scale = width / ViewWidth;
             dc.PushTransform(new ScaleTransform(scale, scale));
@@ -46,36 +47,19 @@ namespace PadTide.Ui
             var hitAlpha = (byte)Math.Min(255, Math.Ceiling(2 / Math.Max(0.01, windowOpacity)));
             dc.DrawGeometry(new SolidColorBrush(Color.FromArgb(hitAlpha, 0, 0, 0)), null, Controller);
 
-            var line = Brush(level is int percent && BatteryReport.IsLowLevel(percent) ? "Color.Signal" : "Color.Foam");
+            var line = Brush(number is int percent && BatteryReport.IsLowLevel(percent) ? "Color.Signal" : "Color.Foam");
             var ink = Brush("Color.Foam");
             var halo = Brush("Color.Halo");
             var stroke = Math.Max(4.4, 1.7 / scale);
             var haloWidth = (width < 44 ? 1.1 : 1.8) / scale;
 
             dc.DrawGeometry(null, RoundPen(halo, stroke + haloWidth), Controller);
-            var waterline = level is int charge ? BadgeTide(charge) : null;
+            var waterline = tide is int charge ? BadgeTide(charge, phase) : null;
             if (waterline != null) dc.DrawGeometry(line, null, new CombinedGeometry(GeometryCombineMode.Intersect, Controller, waterline));
             dc.DrawGeometry(null, RoundPen(line, stroke), Controller);
 
-            if (level is int value)
-            {
-                var number = BuildNumber(value, width >= 60);
-
-                // The number splits at the waterline: foam with a halo above it, dark ink below it.
-                dc.PushClip(new CombinedGeometry(GeometryCombineMode.Exclude, new RectangleGeometry(new Rect(ViewLeft, ViewTop, ViewWidth, ViewHeight)), waterline));
-                dc.DrawGeometry(null, RoundPen(halo, haloWidth), number);
-                dc.DrawGeometry(ink, null, number);
-                dc.Pop();
-
-                dc.PushClip(waterline);
-                dc.DrawGeometry(Brush("Color.Abyss"), null, number);
-                dc.Pop();
-            }
-            else
-            {
-                dc.DrawGeometry(null, RoundPen(halo, haloWidth + 1.2), Bolt);
-                dc.DrawGeometry(ink, RoundPen(ink, 1.2), Bolt);
-            }
+            if (number is int value) DrawAcrossWaterline(dc, BuildNumber(value, width >= 60), waterline, halo, haloWidth, ink, 0);
+            else DrawAcrossWaterline(dc, Bolt, waterline, halo, haloWidth + BoltRounding, ink, BoltRounding);
 
             dc.Pop();
             dc.Pop();
@@ -233,21 +217,45 @@ namespace PadTide.Ui
             foreach (var frame in frames) writer.Write(frame);
         }
 
-        /// <summary>The water below the battery level; 100% rises past the top of the controller.</summary>
-        private static Geometry BadgeTide(int percent)
+        /// <summary>A mark split at the waterline: foam with a halo above it, dark ink below it.</summary>
+        private static void DrawAcrossWaterline(DrawingContext dc, Geometry mark, Geometry? waterline, Brush halo, double haloWidth, Brush ink, double rounding)
         {
-            var y = TideFloor - (TideFloor - TideCeiling) * percent / 100.0;
-            var tide = new StreamGeometry();
-            using (var context = tide.Open())
+            if (waterline != null) dc.PushClip(new CombinedGeometry(GeometryCombineMode.Exclude, new RectangleGeometry(new Rect(ViewLeft, ViewTop, ViewWidth, ViewHeight)), waterline));
+            dc.DrawGeometry(null, RoundPen(halo, haloWidth), mark);
+            dc.DrawGeometry(ink, rounding > 0 ? RoundPen(ink, rounding) : null, mark);
+            if (waterline == null) return;
+            dc.Pop();
+
+            var dark = Brush("Color.Abyss");
+            dc.PushClip(waterline);
+            dc.DrawGeometry(dark, rounding > 0 ? RoundPen(dark, rounding) : null, mark);
+            dc.Pop();
+        }
+
+        /// <summary>The water below the battery level; 100% rises past the top of the controller.</summary>
+        private static Geometry BadgeTide(int percent, double phase) =>
+            Wave(ViewLeft, ViewLeft + ViewWidth, TideFloor - (TideFloor - TideCeiling) * percent / 100.0, TideSwell, phase, ViewTop + ViewHeight);
+
+        /// <summary>A water body with one sine swell across its width; the phase makes it travel.</summary>
+        public static Geometry Wave(double left, double right, double y, double swell, double phase, double bottom)
+        {
+            const int Segments = 24;
+            var points = new Point[Segments + 2];
+            for (var i = 0; i <= Segments; i++)
             {
-                context.BeginFigure(new Point(ViewLeft, y), true, true);
-                context.BezierTo(new Point(14, y - TideSwell), new Point(34, y - TideSwell), new Point(50, y), true, true);
-                context.BezierTo(new Point(66, y + TideSwell), new Point(84, y + TideSwell), new Point(ViewLeft + ViewWidth, y), true, true);
-                context.LineTo(new Point(ViewLeft + ViewWidth, ViewTop + ViewHeight), false, false);
-                context.LineTo(new Point(ViewLeft, ViewTop + ViewHeight), false, false);
+                var t = i / (double)Segments;
+                points[i] = new Point(left + (right - left) * t, y + swell * Math.Sin(2 * Math.PI * t + phase));
             }
-            tide.Freeze();
-            return tide;
+            points[Segments + 1] = new Point(right, bottom);
+
+            var wave = new StreamGeometry();
+            using (var context = wave.Open())
+            {
+                context.BeginFigure(new Point(left, bottom), true, true);
+                context.PolyLineTo(points, false, true);
+            }
+            wave.Freeze();
+            return wave;
         }
 
         private static Geometry BuildNumber(int percent, bool withSign)

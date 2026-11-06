@@ -22,7 +22,7 @@ Ligou o controle, o percentual aparece em um pequeno widget na tela e na área d
 
 - **Bateria em tempo real:** o percentual é atualizado a cada 5 segundos, e o contorno do controle enche até o nível da bateria.
 - **Aviso de bateria baixa:** abaixo de 15%, o contorno do widget fica amarelo.
-- **Carregando:** com o controle no cabo, um raio aparece no lugar do percentual.
+- **Carregando:** com o controle no cabo, um raio aparece no lugar do percentual e a água se move. Pelo cabo o controle não informa o nível, então a água fica na última leitura feita sem fio.
 - **Discreto:** por padrão, o widget fica com 50% de opacidade. Você escolhe a opacidade e o tamanho, de 30 a 100 px.
 - **Leve:** um único programa pequeno. Com o controle desligado, ele fica parado até o Windows avisar que o controle voltou.
 - **Sempre atualizado:** quando sai uma versão nova, ele pergunta e se atualiza sozinho.

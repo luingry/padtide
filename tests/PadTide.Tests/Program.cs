@@ -53,6 +53,9 @@ namespace PadTide.Tests
             Check(charging.Charging && charging.Percent == 42, "bit 7 indica carga");
             BatteryReport.TryParse(Answer(0xFF), 65, out var overflow);
             Check(overflow.Percent == 100, "valor acima de 100 vira 100");
+            Check(!overflow.HasLevel && overflow.Charging, "0xFF indica carga sem nivel conhecido");
+            Check(charging.HasLevel, "carga com nivel informado mantem o nivel");
+            Check(!BatteryReport.WiredCharging.HasLevel, "no cabo o nivel nao e conhecido");
         }
 
         private static void RejectsAnythingThatIsNotADeviceInfoAnswer()
@@ -88,9 +91,10 @@ namespace PadTide.Tests
             Check(clamped.Size == 100 && clamped.OpacityPercent == 10 && clamped.Left == null, "limita valores invalidos");
             Check(AppSettings.Parse(new[] { "size=2" }).Size == 30, "tamanho minimo 30");
 
-            var saved = new AppSettings { Size = 72, OpacityPercent = 35, Left = 1234.5, Top = -20 };
+            var saved = new AppSettings { Size = 72, OpacityPercent = 35, Left = 1234.5, Top = -20, LastPercent = 61 };
             var loaded = AppSettings.Parse(saved.Serialize().Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries));
-            Check(loaded.Size == 72 && loaded.OpacityPercent == 35 && loaded.Left == 1234.5 && loaded.Top == -20, "preserva as preferencias");
+            Check(loaded.Size == 72 && loaded.OpacityPercent == 35 && loaded.Left == 1234.5 && loaded.Top == -20 && loaded.LastPercent == 61, "preserva as preferencias");
+            Check(AppSettings.Parse(new[] { "lastPercent=140" }).LastPercent == null, "ignora percentual invalido");
         }
 
         private static string Release(string tag, string assetName, string url, bool prerelease = false, string digest = "null") =>

@@ -33,6 +33,9 @@ namespace PadTide.Core
         public double? Top { get; set; }
         public DateTime? LastUpdateCheckUtc { get; set; }
 
+        /// <summary>The last real battery reading, which places the tide while charging on the cable.</summary>
+        public int? LastPercent { get; set; }
+
         public static AppSettings Parse(IEnumerable<string> lines)
         {
             var settings = new AppSettings();
@@ -56,6 +59,9 @@ namespace PadTide.Core
                     case "top" when TryParseCoordinate(value, out var top):
                         settings.Top = top;
                         break;
+                    case "lastPercent" when int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var lastPercent) && lastPercent >= 0 && lastPercent <= 100:
+                        settings.LastPercent = lastPercent;
+                        break;
                     case "lastUpdateCheck" when DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var checkedAt):
                         settings.LastUpdateCheckUtc = checkedAt;
                         break;
@@ -71,6 +77,7 @@ namespace PadTide.Core
             text.AppendLine("opacity=" + OpacityPercent.ToString(CultureInfo.InvariantCulture));
             if (Left.HasValue) text.AppendLine("left=" + Left.Value.ToString("0.##", CultureInfo.InvariantCulture));
             if (Top.HasValue) text.AppendLine("top=" + Top.Value.ToString("0.##", CultureInfo.InvariantCulture));
+            if (LastPercent.HasValue) text.AppendLine("lastPercent=" + LastPercent.Value.ToString(CultureInfo.InvariantCulture));
             if (LastUpdateCheckUtc.HasValue) text.AppendLine("lastUpdateCheck=" + LastUpdateCheckUtc.Value.ToString("o", CultureInfo.InvariantCulture));
             return text.ToString();
         }

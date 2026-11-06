@@ -6,8 +6,8 @@ namespace PadTide.Core
         public const int LowThreshold = 15;
         public const int ReportLength = 65;
 
-        /// <summary>On the cable the controller is charging; its level is not read, so Percent says nothing here.</summary>
-        public static readonly BatteryReport WiredCharging = new BatteryReport(100, true);
+        /// <summary>On the cable the firmware reports no real level, so only the last wireless reading can place the tide.</summary>
+        public static readonly BatteryReport WiredCharging = new BatteryReport(100, true, false);
 
         private const int CommandOffset = 1;
         private const int AddressOffset = 2;
@@ -15,15 +15,20 @@ namespace PadTide.Core
         private const int BatteryOffset = 19;
         private const byte DeviceInfoCommand = 0x01;
         private const byte ChargingBit = 0x80;
+        private const byte NoLevelMarker = 0xFF;
 
-        public BatteryReport(int percent, bool charging)
+        public BatteryReport(int percent, bool charging, bool hasLevel = true)
         {
             Percent = percent;
             Charging = charging;
+            HasLevel = hasLevel;
         }
 
         public int Percent { get; }
         public bool Charging { get; }
+
+        /// <summary>False when the controller reported charging without telling how full it is.</summary>
+        public bool HasLevel { get; }
         public bool IsLow => !Charging && IsLowLevel(Percent);
 
         public static bool IsLowLevel(int percent) => percent < LowThreshold;
@@ -50,7 +55,7 @@ namespace PadTide.Core
 
             var raw = buffer[BatteryOffset];
             var percent = raw & ~ChargingBit;
-            report = new BatteryReport(percent > 100 ? 100 : percent, (raw & ChargingBit) != 0);
+            report = new BatteryReport(percent > 100 ? 100 : percent, (raw & ChargingBit) != 0, raw != NoLevelMarker);
             return true;
         }
     }
