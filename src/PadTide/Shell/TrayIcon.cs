@@ -4,7 +4,7 @@ using PadTide.Native;
 
 namespace PadTide.Shell
 {
-    /// <summary>The notification-area icon. Exists only while the controller is on.</summary>
+    /// <summary>The notification-area icon. Always present: the percentage while the controller is on, the brand mark while it is off.</summary>
     internal sealed class TrayIcon : IDisposable
     {
         public const int CallbackMessage = NativeMethods.WmApp + 1;

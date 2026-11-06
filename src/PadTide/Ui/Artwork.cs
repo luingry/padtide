@@ -128,10 +128,15 @@ namespace PadTide.Ui
         }
 
         /// <summary>Builds an HICON the caller owns (TrayIcon destroys it).</summary>
-        public static IntPtr CreateTrayIconHandle(int percent)
+        public static IntPtr CreateTrayIconHandle(int percent) => CreateIconHandle((dc, size) => DrawTrayIcon(dc, size, percent));
+
+        /// <summary>The icon shown while the controller is off: the brand mark alone.</summary>
+        public static IntPtr CreateAppIconHandle() => CreateIconHandle(DrawAppIcon);
+
+        private static IntPtr CreateIconHandle(Action<DrawingContext, double> draw)
         {
             var size = NativeMethods.GetSystemMetricsForDpi(NativeMethods.SmCxSmIcon, NativeMethods.GetDpiForSystem());
-            var straight = new FormatConvertedBitmap(Render(size, size, dc => DrawTrayIcon(dc, size, percent)), PixelFormats.Bgra32, null, 0);
+            var straight = new FormatConvertedBitmap(Render(size, size, dc => draw(dc, size)), PixelFormats.Bgra32, null, 0);
             var pixels = new byte[size * size * 4];
             straight.CopyPixels(pixels, size * 4, 0);
 

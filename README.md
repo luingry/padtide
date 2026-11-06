@@ -18,7 +18,7 @@
 
 ## O que ele faz
 
-Ligou o controle, o percentual aparece em um pequeno widget na tela e na área de notificação. Desligou, tudo some sozinho. Você não precisa abrir nem configurar nada.
+Ligou o controle, o percentual aparece em um pequeno widget na tela e na área de notificação. Desligou, o widget some e fica só o ícone do PadTide na área de notificação. Você não precisa abrir nem configurar nada.
 
 - **Bateria em tempo real:** o percentual é atualizado a cada 5 segundos.
 - **Aviso de bateria baixa:** abaixo de 15%, o contorno do widget fica amarelo.
@@ -58,7 +58,7 @@ A água ao fundo das configurações sobe até o nível real da bateria.
 O Windows esconde ícones novos na setinha `^` ao lado do relógio. Arraste o ícone do PadTide para a barra ou ative-o em **Configurações do Windows > Personalização > Barra de tarefas > Outros ícones da bandeja do sistema**.
 
 **Como abro as configurações com o controle desligado?**
-Abra o PadTide de novo pelo menu Iniciar.
+Clique no ícone do PadTide na área de notificação.
 
 **O percentual parece ter mudado de repente. É normal?**
 O PadTide mostra o número que o próprio controle informa, e esse valor pode oscilar.

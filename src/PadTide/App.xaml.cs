@@ -81,6 +81,7 @@ namespace PadTide
             Settings = AppSettings.Load(_settingsPath);
             _openSettingsIfOff = !e.Args.Contains(StartupRegistration.StartupArgument);
             CreateHost();
+            ShowIdleTray();
 
             _widget = new WidgetWindow();
             _widget.ApplyLook(Settings.Size, Settings.OpacityPercent);
@@ -249,7 +250,7 @@ namespace PadTide
             else
             {
                 _widget!.Hide();
-                _tray!.Hide();
+                ShowIdleTray();
                 if (_firstState && _openSettingsIfOff) OpenSettings();
             }
             var wasFirstState = _firstState;
@@ -268,6 +269,8 @@ namespace PadTide
                 NativeMethods.SetProcessWorkingSetSize(NativeMethods.GetCurrentProcess(), new IntPtr(-1), new IntPtr(-1));
             }), DispatcherPriority.ApplicationIdle);
         }
+
+        private void ShowIdleTray() => _tray!.Show(Artwork.CreateAppIconHandle(), "PadTide: controle desligado");
 
         private void ShowTrayMenu()
         {

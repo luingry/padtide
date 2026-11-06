@@ -2,6 +2,12 @@
 
 Todas as mudanças relevantes do PadTide ficam registradas aqui, no formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e com [versionamento semântico](https://semver.org/lang/pt-BR/).
 
+## [0.1.2] - 2026-11-06
+
+### Corrigido
+
+- O ícone continua na área de notificação com o controle desligado, para abrir as configurações ou encerrar o programa a qualquer momento.
+
 ## [0.1.1] - 2026-11-06
 
 ### Corrigido
