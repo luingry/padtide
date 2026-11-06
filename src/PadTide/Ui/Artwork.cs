@@ -72,7 +72,14 @@ namespace PadTide.Ui
             var tile = new RectangleGeometry(new Rect(0, 0, size, size), size * 0.235, size * 0.235);
             dc.DrawGeometry(new LinearGradientBrush(Token("Color.TideHigh"), Token("Color.Abyss"), new Point(0.2, 0), new Point(0.8, 1)), null, tile);
 
-            var width = size * (compact ? 0.92 : 0.8);
+            DrawBrandController(dc, size, size * (compact ? 0.92 : 0.8), compact);
+        }
+
+        /// <summary>The mark alone, for hosts that draw their own tile behind it (the STK catalog).</summary>
+        private static void DrawModuleIcon(DrawingContext dc, double size) => DrawBrandController(dc, size, size, compact: true);
+
+        private static void DrawBrandController(DrawingContext dc, double size, double width, bool compact)
+        {
             var scale = width / 100;
             dc.PushTransform(new TranslateTransform((size - width) / 2, (size - 58 * scale) / 2 - 8 * scale));
             dc.PushTransform(new ScaleTransform(scale, scale));
@@ -184,6 +191,10 @@ namespace PadTide.Ui
             preview.Frames.Add(BitmapFrame.Create(Render(256, 256, dc => DrawAppIcon(dc, 256))));
             Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
             using (var previewFile = File.Create(Path.ChangeExtension(path, ".png"))) preview.Save(previewFile);
+
+            var moduleIcon = new PngBitmapEncoder();
+            moduleIcon.Frames.Add(BitmapFrame.Create(Render(256, 256, dc => DrawModuleIcon(dc, 256))));
+            using (var moduleFile = File.Create(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(path))!, "padtide-module.png"))) moduleIcon.Save(moduleFile);
 
             int[] sizes = { 16, 20, 24, 32, 40, 48, 64, 256 };
             var frames = new byte[sizes.Length][];
