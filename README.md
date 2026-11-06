@@ -20,7 +20,7 @@
 
 Ligou o controle, o percentual aparece em um pequeno widget na tela e na área de notificação. Desligou, o widget some e fica só o ícone do PadTide na área de notificação. Você não precisa abrir nem configurar nada.
 
-- **Bateria em tempo real:** o percentual é atualizado a cada 5 segundos.
+- **Bateria em tempo real:** o percentual é atualizado a cada 5 segundos, e o contorno do controle enche até o nível da bateria.
 - **Aviso de bateria baixa:** abaixo de 15%, o contorno do widget fica amarelo.
 - **Carregando:** com o controle no cabo, um raio aparece no lugar do percentual.
 - **Discreto:** por padrão, o widget fica com 50% de opacidade. Você escolhe a opacidade e o tamanho, de 30 a 100 px.

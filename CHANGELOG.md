@@ -2,6 +2,12 @@
 
 Todas as mudanças relevantes do PadTide ficam registradas aqui, no formato [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/) e com [versionamento semântico](https://semver.org/lang/pt-BR/).
 
+## [0.3.0] - 2026-11-06
+
+### Adicionado
+
+- O widget agora enche até o nível da bateria, com o número ajustando o contraste na parte coberta.
+
 ## [0.2.0] - 2026-11-06
 
 ### Adicionado

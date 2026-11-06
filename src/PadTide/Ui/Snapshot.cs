@@ -50,11 +50,11 @@ namespace PadTide.Ui
             notice.Close();
         }
 
-        private static BitmapSource Badges(Color background) => Artwork.Render(900, 300, dc =>
+        private static BitmapSource Badges(Color background) => Artwork.Render(1060, 300, dc =>
         {
-            dc.DrawRectangle(new SolidColorBrush(background), null, new Rect(0, 0, 900, 300));
+            dc.DrawRectangle(new SolidColorBrush(background), null, new Rect(0, 0, 1060, 300));
             var x = 16.0;
-            foreach (var (size, percent) in new (int, int?)[] { (30, 65), (30, 100), (30, 9), (30, null), (43, 65), (43, null), (64, 65), (64, 14), (64, null), (100, 65), (100, null) })
+            foreach (var (size, percent) in new (int, int?)[] { (30, 65), (30, 100), (30, 9), (30, null), (43, 65), (43, 30), (43, null), (64, 65), (64, 100), (64, 14), (64, null), (100, 65), (100, 28), (100, 9) })
             {
                 dc.PushTransform(new TranslateTransform(x, 40));
                 Artwork.DrawBadge(dc, size, percent);

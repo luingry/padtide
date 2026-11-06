@@ -19,6 +19,9 @@ namespace PadTide.Ui
         private const double ViewWidth = 104;
         private const double ViewHeight = 66;
         private const double NumberCenterY = 28.5;
+        private const double TideFloor = 66;
+        private const double TideCeiling = 4;
+        private const double TideSwell = 2.2;
 
         public const double BadgeAspect = ViewHeight / ViewWidth;
 
@@ -31,7 +34,7 @@ namespace PadTide.Ui
         private static readonly Typeface Numeral = new Typeface(new FontFamily("Bahnschrift"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Normal);
         private static readonly Typeface NumeralCondensed = new Typeface(new FontFamily("Bahnschrift"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Condensed);
 
-        /// <summary>The widget: controller outline only, the percentage in the middle, or a bolt while charging (null level).</summary>
+        /// <summary>The widget: the controller filled to the battery level, the percentage in the middle, or an empty outline and a bolt while charging (null level).</summary>
         public static void DrawBadge(DrawingContext dc, double width, int? level, double windowOpacity = 1)
         {
             var scale = width / ViewWidth;
@@ -50,13 +53,23 @@ namespace PadTide.Ui
             var haloWidth = (width < 44 ? 1.1 : 1.8) / scale;
 
             dc.DrawGeometry(null, RoundPen(halo, stroke + haloWidth), Controller);
+            var waterline = level is int charge ? BadgeTide(charge) : null;
+            if (waterline != null) dc.DrawGeometry(line, null, new CombinedGeometry(GeometryCombineMode.Intersect, Controller, waterline));
             dc.DrawGeometry(null, RoundPen(line, stroke), Controller);
 
             if (level is int value)
             {
                 var number = BuildNumber(value, width >= 60);
+
+                // The number splits at the waterline: foam with a halo above it, dark ink below it.
+                dc.PushClip(new CombinedGeometry(GeometryCombineMode.Exclude, new RectangleGeometry(new Rect(ViewLeft, ViewTop, ViewWidth, ViewHeight)), waterline));
                 dc.DrawGeometry(null, RoundPen(halo, haloWidth), number);
                 dc.DrawGeometry(ink, null, number);
+                dc.Pop();
+
+                dc.PushClip(waterline);
+                dc.DrawGeometry(Brush("Color.Abyss"), null, number);
+                dc.Pop();
             }
             else
             {
@@ -218,6 +231,23 @@ namespace PadTide.Ui
                 offset += frames[i].Length;
             }
             foreach (var frame in frames) writer.Write(frame);
+        }
+
+        /// <summary>The water below the battery level; 100% rises past the top of the controller.</summary>
+        private static Geometry BadgeTide(int percent)
+        {
+            var y = TideFloor - (TideFloor - TideCeiling) * percent / 100.0;
+            var tide = new StreamGeometry();
+            using (var context = tide.Open())
+            {
+                context.BeginFigure(new Point(ViewLeft, y), true, true);
+                context.BezierTo(new Point(14, y - TideSwell), new Point(34, y - TideSwell), new Point(50, y), true, true);
+                context.BezierTo(new Point(66, y + TideSwell), new Point(84, y + TideSwell), new Point(ViewLeft + ViewWidth, y), true, true);
+                context.LineTo(new Point(ViewLeft + ViewWidth, ViewTop + ViewHeight), false, false);
+                context.LineTo(new Point(ViewLeft, ViewTop + ViewHeight), false, false);
+            }
+            tide.Freeze();
+            return tide;
         }
 
         private static Geometry BuildNumber(int percent, bool withSign)
