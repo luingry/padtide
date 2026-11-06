@@ -32,6 +32,8 @@ namespace PadTide.Shell
         {
             var directory = Path.Combine(Path.GetTempPath(), "PadTide", "updates");
             Directory.CreateDirectory(directory);
+            // The installer of a previous update cannot delete itself; this is the next chance to do it.
+            foreach (var leftover in Directory.GetFiles(directory, UpdateManifest.InstallerAssetPrefix + "*.exe")) TryDelete(leftover);
             var destination = Path.Combine(directory, UpdateManifest.InstallerAssetPrefix + offer.Version + "-" + Guid.NewGuid().ToString("N") + ".exe");
             try
             {

@@ -36,6 +36,7 @@ namespace PadTide
         private DispatcherTimer? _saveTimer;
         private bool _openSettingsIfOff;
         private bool _firstState = true;
+        private bool _persistSettings = true;
         private readonly Updater _updater = new Updater();
         private DispatcherTimer? _updateTimer;
         private UpdateNoticeWindow? _updateNotice;
@@ -59,6 +60,7 @@ namespace PadTide
             }
             if (e.Args.Length >= 2 && e.Args[0] == "--snapshot")
             {
+                _persistSettings = false;
                 Snapshot.Write(e.Args[1]);
                 Shutdown();
                 return;
@@ -286,6 +288,7 @@ namespace PadTide
         private void SaveSettings()
         {
             _saveTimer?.Stop();
+            if (!_persistSettings) return;
             try
             {
                 Settings.Save(_settingsPath);

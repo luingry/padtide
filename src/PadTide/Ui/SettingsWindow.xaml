@@ -29,7 +29,8 @@
 
             <StackPanel Grid.Row="0" HorizontalAlignment="Center" Margin="0,8,0,34">
                 <Image x:Name="BrandIcon" Width="84" Height="84" RenderOptions.BitmapScalingMode="HighQuality" AutomationProperties.Name="PadTide" />
-                <TextBlock x:Name="VersionText" Style="{StaticResource Text.Version}" HorizontalAlignment="Center" Margin="0,12,0,0" />
+                <TextBlock Style="{StaticResource Text.Title}" Text="PadTide" HorizontalAlignment="Center" Margin="0,12,0,0" />
+                <TextBlock x:Name="VersionText" Style="{StaticResource Text.Version}" HorizontalAlignment="Center" Margin="0,3,0,0" />
             </StackPanel>
 
             <StackPanel Grid.Row="1" Margin="0,0,0,18">

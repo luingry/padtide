@@ -15,6 +15,11 @@ namespace PadTide.Ui
         private const double EdgeMargin = 24;
         private readonly BadgeView _badge = new BadgeView();
         private double _opacity = 0.5;
+        private bool _pressed;
+        private bool _dragging;
+        private Point _pressCursor;
+        private double _pressLeft;
+        private double _pressTop;
 
         public WidgetWindow()
         {
@@ -30,6 +35,8 @@ namespace PadTide.Ui
             Content = _badge;
             SourceInitialized += (s, e) => NativeMethods.MakeNonActivatingToolWindow(new WindowInteropHelper(this).Handle);
             MouseLeftButtonDown += OnPress;
+            MouseMove += OnDrag;
+            MouseLeftButtonUp += OnRelease;
         }
 
         public event Action? SettingsRequested;
@@ -46,6 +53,7 @@ namespace PadTide.Ui
             Width = size;
             Height = size * Artwork.BadgeAspect;
             _opacity = opacityPercent / 100d;
+            _badge.WindowOpacity = _opacity;
             BeginAnimation(OpacityProperty, null);
             Opacity = _opacity;
         }
@@ -83,27 +91,52 @@ namespace PadTide.Ui
                 NativeMethods.SwpNoMove | NativeMethods.SwpNoSize | NativeMethods.SwpNoActivate);
         }
 
+        // DragMove's modal loop swallows the second press of a double-click, so the drag is done by hand.
         private void OnPress(object sender, MouseButtonEventArgs e)
         {
             if (e.ClickCount == 2)
             {
+                _pressed = false;
                 SettingsRequested?.Invoke();
                 return;
             }
-            try
-            {
-                DragMove();
-                Moved?.Invoke();
-            }
-            catch (InvalidOperationException)
-            {
-                // The button was already released.
-            }
+            _pressed = true;
+            _dragging = false;
+            _pressCursor = CursorPosition();
+            _pressLeft = Left;
+            _pressTop = Top;
+            CaptureMouse();
+        }
+
+        private void OnDrag(object sender, MouseEventArgs e)
+        {
+            if (!_pressed) return;
+            var offset = CursorPosition() - _pressCursor;
+            if (!_dragging && Math.Abs(offset.X) < SystemParameters.MinimumHorizontalDragDistance && Math.Abs(offset.Y) < SystemParameters.MinimumVerticalDragDistance) return;
+            _dragging = true;
+            Left = _pressLeft + offset.X;
+            Top = _pressTop + offset.Y;
+        }
+
+        private void OnRelease(object sender, MouseButtonEventArgs e)
+        {
+            if (!_pressed) return;
+            _pressed = false;
+            ReleaseMouseCapture();
+            if (_dragging) Moved?.Invoke();
+        }
+
+        private Point CursorPosition()
+        {
+            NativeMethods.GetCursorPos(out var cursor);
+            var fromDevice = PresentationSource.FromVisual(this)?.CompositionTarget?.TransformFromDevice ?? Matrix.Identity;
+            return fromDevice.Transform(new Point(cursor.X, cursor.Y));
         }
 
         private sealed class BadgeView : FrameworkElement
         {
             private int _percent;
+            private double _windowOpacity = 1;
 
             public int Percent
             {
@@ -116,7 +149,17 @@ namespace PadTide.Ui
                 }
             }
 
-            protected override void OnRender(DrawingContext dc) => Artwork.DrawBadge(dc, ActualWidth, _percent);
+            public double WindowOpacity
+            {
+                get => _windowOpacity;
+                set
+                {
+                    _windowOpacity = value;
+                    InvalidateVisual();
+                }
+            }
+
+            protected override void OnRender(DrawingContext dc) => Artwork.DrawBadge(dc, ActualWidth, _percent, _windowOpacity);
         }
     }
 }

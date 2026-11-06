@@ -31,14 +31,16 @@ namespace PadTide.Ui
         private static readonly Typeface NumeralCondensed = new Typeface(new FontFamily("Bahnschrift"), FontStyles.Normal, FontWeights.SemiBold, FontStretches.Condensed);
 
         /// <summary>The widget: controller outline only, the percentage in the middle.</summary>
-        public static void DrawBadge(DrawingContext dc, double width, int percent)
+        public static void DrawBadge(DrawingContext dc, double width, int percent, double windowOpacity = 1)
         {
             var scale = width / ViewWidth;
             dc.PushTransform(new ScaleTransform(scale, scale));
             dc.PushTransform(new TranslateTransform(-ViewLeft, -ViewTop));
 
-            // A one-step alpha keeps the hollow middle clickable in a layered window.
-            dc.DrawGeometry(new SolidColorBrush(Color.FromArgb(1, 0, 0, 0)), null, Controller);
+            // Layered windows ignore clicks on pixels with zero alpha. Scaling by the window opacity keeps the
+            // hollow middle clickable at every setting while staying invisible.
+            var hitAlpha = (byte)Math.Min(255, Math.Ceiling(2 / Math.Max(0.01, windowOpacity)));
+            dc.DrawGeometry(new SolidColorBrush(Color.FromArgb(hitAlpha, 0, 0, 0)), null, Controller);
 
             var line = Brush(BatteryReport.IsLowLevel(percent) ? "Color.Signal" : "Color.Foam");
             var ink = Brush("Color.Foam");
