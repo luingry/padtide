@@ -23,6 +23,13 @@ Consultar este arquivo antes de investigar um problema relacionado.
 - **Solução:** o modo `--snapshot` nunca grava preferências.
 - **Prevenção:** ferramentas de diagnóstico não devem tocar nos dados do usuário.
 
+## Preferências e início com o Windows só na visão do Claude (0.5.0)
+
+- **Sintoma:** o app aberto fora da sessão voltou a 64 px e 50%, e a chave `Run` real não tinha o PadTide, embora os dois parecessem certos na sessão do agente.
+- **Causa:** o Claude desktop é um pacote MSIX. Processos iniciados a partir do shell do agente veem `%APPDATA%`, `%LOCALAPPDATA%` e parte de `HKCU` virtualizados. O app aberto assim gravou preferências e `Run` só em `Packages\Claude_*\LocalCache`.
+- **Solução:** preferências restauradas no arquivo real, com backup, e app reaberto por `Win32_Process.Create`, que não herda o pacote.
+- **Prevenção:** abrir e conferir o app instalado com `verify-installed.ps1`. Ler dados reais por `\\localhost\C$\Users\<usuário>\AppData\...` e a `Run` real por um processo criado via WMI. Nunca concluir algo sobre estado real a partir do shell do agente.
+
 ## Barras e botões com formato de lente
 
 - **Sintoma:** os trilhos dos sliders saíam com as pontas afinadas, como uma lente.

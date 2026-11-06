@@ -30,3 +30,4 @@ A única mensagem enviada ao controle é o pedido de `BatteryReport.CreateReques
 - O resumo final informa `Versão esperada: X.Y.Z` e o que foi ou não testado com o controle real.
 - Não declarar release concluída sem conferir o workflow, a tag e os arquivos no GitHub.
 - A chave `Run` do registro é compartilhada: alterar só o valor `PadTide`.
+- Processos iniciados pelo shell do agente veem pastas e parte do registro virtualizados pelo pacote do Claude. Provar o app instalado por um processo criado via WMI e ler o estado real por `\\localhost\C$` (ver `ERRORS.md`).
